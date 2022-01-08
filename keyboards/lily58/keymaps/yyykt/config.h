@@ -22,12 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Select hand configuration */
 
-#define MASTER_LEFT
-// #define MASTER_RIGHT
+// #define MASTER_LEFT
+#define MASTER_RIGHT
 // #define EE_HANDS
 
 #define TAPPING_FORCE_HOLD
-#define TAPPING_TERM 100
+#define HOLD_ON_OTHER_KEY_PRESS
+#define TAPPING_TERM 500
 
 #undef RGBLED_NUM
 #define RGBLIGHT_ANIMATIONS
@@ -36,6 +37,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RGBLIGHT_HUE_STEP 10
 #define RGBLIGHT_SAT_STEP 17
 #define RGBLIGHT_VAL_STEP 17
+
+// #define DEBUG_MATRIX_SCAN_RATE
+
+// #define OLED_FONT_H "lib/glcdfont_lily.c"
+#undef OLED_FONT_H
+#define OLED_FONT_H "keymaps/yyykt/glcdfont_custom.c"
 
 // Underglow
 /*

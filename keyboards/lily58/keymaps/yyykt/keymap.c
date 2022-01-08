@@ -107,7 +107,8 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
   if (!is_keyboard_master())
     return OLED_ROTATION_180;  // flips the display 180 degrees if offhand
-  return rotation;
+  // return rotation;
+  return OLED_ROTATION_270;
 }
 
 // When you add source files to SRC in rules.mk, you can use functions.
@@ -122,15 +123,43 @@ const char *read_keylogs(void);
 // void set_timelog(void);
 // const char *read_timelog(void);
 
+void count(void);
+const char *read_hikari(void);
+const char *read_wpm(void);
+
+
+void print_layer_state(void) {
+  oled_write_P(PSTR("Layer"), false);
+
+  switch (get_highest_layer(layer_state)) {
+  case _QWERTY:
+      oled_write_ln_P(PSTR("Def"), false);
+      break;
+  case _RAISE:
+      oled_write_ln_P(PSTR("Raise"), false);
+      break;
+  case _LOWER:
+      oled_write_ln_P(PSTR("Lower"), false);
+      break;
+  case _ADJUST:
+      oled_write_ln_P(PSTR("Adj"), false);
+      break;
+  default:
+      oled_write_ln_P(PSTR("Undef"), false);
+  }
+}
+
 bool oled_task_user(void) {
   if (is_keyboard_master()) {
     // If you want to change the display of OLED, you need to change here
-    oled_write_ln(read_layer_state(), false);
-    oled_write_ln(read_keylog(), false);
-    oled_write_ln(read_keylogs(), false);
-    //oled_write_ln(read_mode_icon(keymap_config.swap_lalt_lgui), false);
-    //oled_write_ln(read_host_led_state(), false);
-    //oled_write_ln(read_timelog(), false);
+    // oled_write(read_logo(), false);
+    oled_set_cursor(0, 3);
+    oled_write(read_hikari(), false);
+    oled_set_cursor(0, 8);
+    oled_write_ln_P(PSTR(" WPM"), false);
+    oled_write_ln(read_wpm(), false);
+    oled_set_cursor(0, 11);
+    print_layer_state();
   } else {
     oled_write(read_logo(), false);
   }
@@ -138,10 +167,41 @@ bool oled_task_user(void) {
 }
 #endif // OLED_ENABLE
 
+uint8_t mod_state;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  mod_state = get_mods();
+  static bool bspc_registered = false;
+  switch(keycode) {
+  case LCTL_T(KC_ESC):
+    if(record->tap.count && record->event.pressed) {
+      tap_code(KC_ESC);
+      tap_code16(KC_MHEN);
+      return false;
+    }
+    break;
+  case KC_H:
+    if(record->event.pressed) {
+      if (mod_state & MOD_MASK_CTRL) {
+        del_mods(MOD_MASK_CTRL);
+        register_code(KC_BSPC);
+        set_mods(mod_state);
+        bspc_registered = true;
+        return false;
+      }
+    } else {
+      if (bspc_registered) {
+        unregister_code(KC_BSPC);
+        bspc_registered = false;
+      }
+    }
+    break;
+  }
+
+  // OLED
   if (record->event.pressed) {
 #ifdef OLED_ENABLE
-    set_keylog(keycode, record);
+    // set_keylog(keycode, record);
+    count();
 #endif
     // set_timelog();
   }
